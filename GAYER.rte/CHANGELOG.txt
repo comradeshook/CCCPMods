@@ -1,0 +1,9 @@
+MERGED HPOM AND LPOS INTO THIS
+- Fixed Laser pew pew guns spawning wounds at somewhat erratic positions and angles, shit should work now
+- Tweaked black hole terrain erasure for better performance on large holes
+- Added option to make black hole fire glow, for those so inclined :V
+- Black hole visual effects no longer collide with terrain
+- Huge Bomb and Enormous Bomb now have shiny new sprites thanks to Tleno :v
+- Icicle Gun shots now PROPERLY sticks at their intended angle
+- Removed a pile of custom materials from the snow pack, not really necessary lol
+- Added Lepton Sundering Device
