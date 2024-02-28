@@ -1,4 +1,4 @@
-Mods for Cortex Command Community Project! 
+Mods for Cortex Command Community Project!  
 Status:
 
 **GAYER.rte** - My big fat megapacks mashed together into a single massive one. Playable on 6.2.2 and forward.
