@@ -1,0 +1,10 @@
+v0.1.0
+- First release, contains Donk and Donk Rifle
+
+v0.1.1
+- Fixed attack flies targeting doors when they couldn't harm them anyways
+- Fixed attack fly sound being way too loud
+- Fixed spark bullets not hitting very close targets
+- Slightly tweaked spark bullet trail to result in fewer wacky results
+- When a Donk dies with active flies, it will now (attempt to) transfer them to a nearby Donk, flies that fail to transfer will pop
+- Reduced blue fly attack rate a bit (2.5/s --> 2/s)

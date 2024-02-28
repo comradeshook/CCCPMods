@@ -1,0 +1,16 @@
+DataModule
+	SupportedGameVersion = 6.0.0
+	ModuleName = Donks
+	IsFaction = 0
+	Author = Shook
+	IconFile = ContentFile
+		FilePath = Donks.rte/ModuleIcon.png
+	Description = DONKS. Do you require weird donkey robots? Well you are in the right place!
+	IncludeFile = Donks.rte/Shared/Sounds.ini
+	IncludeFile = Donks.rte/Shared/Particles.ini
+	IncludeFile = Donks.rte/Shared/Flies/Flies.ini
+	IncludeFile = Donks.rte/Devices/Guns/Effects.ini
+	IncludeFile = Donks.rte/Devices/Guns/DonkRifle/DonkRifle.ini
+//	IncludeFile = Donks.rte/Devices/Guns/ThunderCannon/ThunderCannon.ini
+//	IncludeFile = Donks.rte/Devices/Tools/Tunneller.ini
+	IncludeFile = Donks.rte/Actors/Donk/Donk.ini
