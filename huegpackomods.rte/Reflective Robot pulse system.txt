@@ -1,0 +1,16 @@
+So yeah, if you're reading this, you're probably wondering what this pulse system is.
+Basically, it's a sneaky system that allows your Reflective Robot MK-II to send out
+four different pulses, each with different combinations of pressing Left and Right.
+The keypresses have to be in a fairly quick succession, so the probability of triggering
+the pulses accidentally is pretty low.
+The list goes like this:
+- Left x4 = Mass Pulse (Heavy particles get fired out and blast enemies to hell)
+- Right x4 = Piercing Pulse (Sharp particles that become a LOT sharper if they're heading towards someone)
+- Left x2 + Right x2 = Deadly Pulse (Instant death to anyone who touches the pulse, and who isn't a Reflective Robot)
+- Left x3 + Right x3 = Instagib Pulse (Should be self-explanatory, though it doesn't work on Reflective Robots)
+
+In the latter two, Left and Right are interchangable, meaning that you can go 
+right-right-left-left, but not right-left-right-left.
+
+If you're still in doubt, contact me (Shook) on Data Realms Fan Forum with either a
+PM or a post in the Hueg Pack o' Mods thread, and i'll do my best to help you.

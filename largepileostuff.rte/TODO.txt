@@ -1,0 +1,3 @@
+- Huge Bomb and Enormous Bomb now have shiny new sprites thanks to Tleno :v
+- Icicle Gun shots now PROPERLY sticks at their intended angle
+- Removed a pile of custom materials from the snow pack, not really necessary lol
