@@ -121,7 +121,7 @@ DataModule
 	IncludeFile = GAYER.rte/HomingStuff/HomingBrain/BrainLauncher.ini
 	IncludeFile = GAYER.rte/HomingStuff/HomingDigger/HomingDigger.ini
 	IncludeFile = GAYER.rte/Shotguns/GrenadeShotgun/GrenadeShotgun.ini
-	IncludeFile = GAYER.rte/Bombs/Bombs.ini
+	IncludeFile = GAYER.rte/Bombs/RoundBombs.ini
 //	IncludeFile = GAYER.rte/DirectDrop/DirectDrop.ini
 	IncludeFile = GAYER.rte/BlastBeam/BlastBeam.ini
 	IncludeFile = GAYER.rte/Eruptor/Eruptor.ini

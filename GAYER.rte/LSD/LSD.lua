@@ -6,8 +6,7 @@ local rainbowColours = {13, 47, 87, 162, 194, 216};
 local glowColours = {"RedTiny.png", "FireGlowTiny.png", "YellowTiny.png", "YellowTiny.png", "LightBlueTiny.png", "BlueTiny.png"};
 local colourChangeSpeed = 0.5;
 
-local terrainRadius = 10;
-
+local terrainRadius = 20;
 local GetTerrMatter = SceneMan.GetTerrMatter;
 local DislodgePixel = SceneMan.DislodgePixel;
 
@@ -24,11 +23,12 @@ local function SettleAll(MO, var)
 	end
 end
 
-local function FreezeTableEntry(pos)
+local function FreezeTableEntry(pos, distVec)
 	local entry = {};
 	entry.frozen = false;
 	entry.X = pos.X;
 	entry.Y = pos.Y;
+	entry.distVec = distVec;
 	return entry;
 end
 
@@ -76,14 +76,15 @@ end
 
 local function SpawnAsh(pos, colourIndex)
 	local ash = CreateMOPixel("Ash Particle", "GAYER.rte");
-	local colour = rainbowColours[math.floor(colourIndex)];
+	local index = math.floor(colourIndex % #rainbowColours) + 1;
+	local colour = rainbowColours[index];
 	ash.Pos = pos;
 	ash.Lifetime = math.random()*ash.Lifetime + 1;
 	ash:SetColorIndex(colour);
 	local scatterVel = 1;
 	ash.Vel = Vector(math.random()*scatterVel*2 - scatterVel, math.random()*scatterVel*2 - scatterVel);
 	if (math.random() > 0.5) then
-		ash:SetScreenEffectPath("Base.rte/Effects/Glows/" .. glowColours[math.floor(colourIndex)]);
+		ash:SetScreenEffectPath("Base.rte/Effects/Glows/" .. glowColours[index]);
 	end
 	MovableMan:AddParticle(ash);
 end
@@ -118,7 +119,7 @@ function Update(self)
 							if (VecGetMagnitude(distVec) <= radius) then
 								local matt = GetTerrMatter(SceneMan, checkPos.X, checkPos.Y);
 								if (matt ~= 0 and (matt == targetMatt or targetMatt == -1)) then
-									var.pixelTable[checkPos.X][checkPos.Y] = FreezeTableEntry(checkPos);
+									var.pixelTable[checkPos.X][checkPos.Y] = FreezeTableEntry(checkPos, VecShortestDistance(var.hitPos, checkPos, true));
 								end
 							elseif (y > radius) then
 								break;
@@ -151,7 +152,9 @@ function Update(self)
 							if (entry.frozen) then
 								local pixel = DislodgePixel(SceneMan, entry.X, entry.Y, true);
 								if (pixel) then
-									SpawnAsh(pixel.Pos, pixelColour);
+									local distFactor = VecGetMagnitude(entry.distVec) / 10;
+									local colourOffset = math.abs(math.sin(VecGetAbsRadAngle(entry.distVec) + distFactor)) * 4;
+									SpawnAsh(pixel.Pos, pixelColour + colourOffset);
 								end
 								
 								local jump = math.random(2);
@@ -210,7 +213,10 @@ function Update(self)
 							if (p.frozen == false) then
 								local pixel = DislodgePixel(SceneMan, p.X, p.Y, true);
 								if (pixel and math.random() > 0.5) then
-									SpawnAsh(pixel.Pos, GetColour(var));
+									local dist = VecGetMagnitude(p.distVec);
+									local distFactor = dist / 10;
+									local colourOffset = math.abs(math.sin(VecGetAbsRadAngle(p.distVec) + distFactor)) * 4;
+									SpawnAsh(pixel.Pos, (dist/4) + colourOffset);
 								end
 							end
 						end
