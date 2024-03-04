@@ -1,5 +1,4 @@
-package.path = package.path .. string.format(";GAYER.rte/Fx/?.lua")
-require("MegaGib")
+dofile("GAYER.rte/Fx/MegaGib.lua")
 
 function Create(self)
 	self.skipCheck = 0
