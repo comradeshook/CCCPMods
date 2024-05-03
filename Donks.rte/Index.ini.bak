@@ -1,5 +1,5 @@
 DataModule
-	SupportedGameVersion = 6.0.0
+	SupportedGameVersion = 6.1.0
 	ModuleName = Donks
 	IsFaction = 0
 	Author = Shook
