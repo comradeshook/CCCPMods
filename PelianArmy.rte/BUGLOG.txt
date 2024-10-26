@@ -1,16 +1,13 @@
 - Hailstorm doesn't work
-- Cluster bomb launcher goes poof
 - Sniper might be too weak
 - Napalm grenade is LAME
 - Destroyer can friendly fire
-- Planet Killer sometimes doesn't detonate when landing lightly??
-- Weight fuckery on rocket??
 
 - Liquidus has big terrain delete circle; keeping until people bitch about it
 
 
 Reduced terrain chew of a lot of things
-Rocket thruster is STRONKER
+Rocket thruster is STRONKER and also rocket ignores its cargo weight
 Orbital teleport no longer deletes terrain
 Added extra frames to Planet Killer, and also its initial explosion animation looks much cooler
 More smoke in Destroyer projectile trails because it's cool, also Destroyer ammo difference now works via different magazines

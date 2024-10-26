@@ -17,8 +17,10 @@ function Update(self)
 			local dot = CreateMOPixel("Tracer Particle")
 			local aimVector = Vector(self.fireVel, 0):RadRotate(self.angle) + (gravity * i)
 			newPos = newPos + (aimVector / 3)
-			dot.Pos = initPos + newPos
-			local endPos = Vector(0, 0)
+			local dotPos = initPos + newPos;
+			SceneMan:WrapPosition(dotPos);
+			dot.Pos = dotPos;
+			local endPos = oldPos + aimVector;
 			if i > 2 then
 				local randomRay = SceneMan:CastMORay(oldPos, aimVector, dot.ID, self.IgnoresWhichTeam, 0, false, 0)
 				endPos = SceneMan:GetLastRayHitPos()
