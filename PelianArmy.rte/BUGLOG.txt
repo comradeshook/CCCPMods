@@ -1,0 +1,20 @@
+- Hailstorm doesn't work
+- Cluster bomb launcher goes poof
+- Sniper might be too weak
+- Napalm grenade is LAME
+- Destroyer can friendly fire
+- Planet Killer sometimes doesn't detonate when landing lightly??
+- Weight fuckery on rocket??
+- MARS walkpath is shidded
+
+- Liquidus has big terrain delete circle; keeping until people bitch about it
+
+
+Reduced terrain chew of a lot of things
+Rocket thruster is STRONKER
+Orbital teleport no longer deletes terrain
+Added extra frames to Planet Killer, and also its initial explosion animation looks much cooler
+More smonk in Destroyer projectile trails because it's cool, also Destroyer ammo difference now works via different magazines
+Removed deepcheck from all magazines and casings and also made their material much weaker so they don't form blockades
+SMG, Pistol, Plasma Axe and Mortar Caller are properly dual-wieldable now so the off-hand variants are removed
+Shotgun, Talus and Tephra now have cool recoil

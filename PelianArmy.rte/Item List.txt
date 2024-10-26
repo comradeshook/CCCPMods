@@ -1,0 +1,55 @@
+///////
+//Actors
+
+PA Light Soldier
+PA Medium Soldier
+PA Heavy Soldier
+Pelian Assault Robot
+PA MARS
+PA Brain Case
+
+///////
+//Weapons
+
+PALB-14 Rocket Launcher
+PACQ-23 Plasma Axe
+PASE-74 "Conflagrator"
+PALE-41 Flamethrower
+PASB-51 Shotgun
+PALB-85 "Destroyer"
+PALE-47 Plasma Cannon
+PASE-78 "Hailstorm"
+PASB-29 Sniper Rifle
+PALB-65 Gatling Gun
+PASB-35 Grenade Launcher
+PASE-19 Mortar Caller
+PASB-21 SMG
+PALB-68 Clusterbomb Cannon
+PASB-03 Pistol
+PASE-94 Laser Rifle
+PASE-53 Plasma Rifle
+PASB-86 Assault Rifle
+
+///////
+//Tools
+
+///////
+//Shields
+
+PAS-01 "Retributor"
+PAS-02 Plasma Shield
+PASB-03 Pistol Off-Hand
+PASB-21 SMG Off-Hand
+
+///////
+//Bombs
+
+PAX-01 Frag Grenade
+PAX-02 Plasma Grenade
+PAX-03 Napalm Grenade
+
+///////
+//Transport
+
+PA Rocket
+PA Orbital Teleport
