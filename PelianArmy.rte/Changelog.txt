@@ -1,0 +1,10 @@
+V1.0.0 - CCCP v6.2.2
+- Reduced terrain chew of a lot of things
+- Rocket thruster is STRONKER and also rocket ignores its cargo weight
+- Orbital teleport no longer deletes terrain
+- Added extra frames to Planet Killer, and also its initial explosion animation looks much cooler
+- More smoke in Destroyer projectile trails because it's cool, also Destroyer ammo difference now works via different magazines
+- Removed deepcheck from all magazines and casings and also made their material much weaker so they don't form blockades
+- SMG, Pistol, Plasma Axe and Mortar Caller are properly dual-wieldable now so the off-hand variants are removed
+- Shotgun, Talus and Tephra now have cool recoil
+- MARS walk paths are now mostly unshidded, hooray!

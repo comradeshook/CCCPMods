@@ -16,5 +16,4 @@ function Update(self)
 		self.Health = -1;
 		self.scuttleTimer = nil;
 	end
-	print(self.initialMass)
 end

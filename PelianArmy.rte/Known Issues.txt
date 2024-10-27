@@ -1,0 +1,3 @@
+- Napalm grenade is LAME
+- Liquidus has deletes terrain in a big circle; keeping it unless people complain about it
+- Planet Killer has HUGE terrain deletion radius, kept for the Original Experience™

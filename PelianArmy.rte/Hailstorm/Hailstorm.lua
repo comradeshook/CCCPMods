@@ -20,8 +20,8 @@ function Update(self)
 				endPos = SceneMan:GetLastRayHitPos()
 				local trueLength = SceneMan:ShortestDistance(oldPos, endPos, true).Magnitude
 				if trueLength < aimVector.Magnitude then
-					local mortar = CreateAEmitter("Hailstorm Prepare 1")
-					mortar.Pos = endPos
+					local mortar = CreateAEmitter("Hailstorm Effects")
+					mortar.Pos = endPos + Vector(0, -5);
 					mortar.Vel = Vector(0, 0)
 					MovableMan:AddMO(mortar)
 					break

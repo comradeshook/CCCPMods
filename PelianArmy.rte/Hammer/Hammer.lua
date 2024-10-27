@@ -18,6 +18,7 @@ function Update(self)
 				local boolit = CreateMOPixel("Particle Hammer Short")
 				boolit.Pos = self.MuzzlePos
 				boolit.Vel = bulletVel
+				boolit.Team = self.Team
 				boolit:SetWhichMOToNotHit(MovableMan:GetMOFromID(self.RootID), -1)
 				MovableMan:AddMO(boolit)
 			end
