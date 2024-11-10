@@ -1,8 +1,8 @@
 function Create(self)
 	local var = {};
-	var.range = Vector(25, 0);
+	var.range = Vector(30, 0);
 	var.colour = 166;
-	var.arc = 2.5; -- Radians
+	var.arc = 2.1; -- Radians
 	var.arcSteps = math.ceil(var.range.Magnitude * var.arc);
 	var.angleStep = var.arc / var.arcSteps;
 	var.Pos = self.Pos;
