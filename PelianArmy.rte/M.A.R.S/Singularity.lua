@@ -22,6 +22,7 @@ function Create(self)
 end
 
 local ShortestDistance = SceneMan.ShortestDistance;
+local DislodgePixelCircle = SceneMan.DislodgePixelCircle;
 
 function Update(self)
 	local var = self.var;
@@ -50,4 +51,11 @@ function Update(self)
 			end
 		end
 	end
+
+	---- Enable for terrain deletion :D
+	-- for pixel in DislodgePixelCircle(SceneMan, var.Pos, 8) do
+	-- 	if (math.random() < 0.7) then
+	-- 		pixel.ToDelete = true;
+	-- 	end
+	-- end
 end
