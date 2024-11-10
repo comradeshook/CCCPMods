@@ -6,12 +6,12 @@ function Create(self)
 end
 
 function Update(self)
+	if self:GetRootParent().UniqueID == self.UniqueID then
+		self.gonnaGIB = true;
+	end
+	
 	if self.gonnaGIB == true then
 		self:GibThis()
 		self.gonnaGIB = false
 	end
-end
-
-function OnDetach(self, exParent)
-	self.gonnaGIB = true
 end
