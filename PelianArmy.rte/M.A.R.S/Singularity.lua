@@ -31,14 +31,15 @@ function Update(self)
 		if GetRootParent(MO).UniqueID ~= var.ownerRoot.UniqueID then
 			local MOVector = ShortestDistance(SceneMan, var.Pos, MO.Pos, true)
 			local gravDist = MOVector.Magnitude
-			if MOVector.Magnitude < var.killRadius + (MO.Radius / 2) then
-				if IsMOSRotating(MO) then
+			if IsMOSRotating(MO) then
+				local MOSR = ToMOSRotating(MO);
+				if MOVector.Magnitude < var.killRadius + (MOSR.IndividualRadius / 2) then
 					local hasGibs = false;
-					for gib in ToMOSRotating(MO).Gibs do
+					for gib in MOSR.Gibs do
 						hasGibs = true;
 					end
 					if (hasGibs) then
-						ToMOSRotating(MO):GibThis()
+						MOSR:GibThis()
 					end
 				end
 			end
