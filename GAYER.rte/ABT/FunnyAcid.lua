@@ -3,6 +3,7 @@ local bottomChance = 0.6;
 local sideChance = 1;
 local topChance = 0.2;
 local smonkChance = 0.1;
+local MOSmonkChance = 0.1;
 local corrodeInterval = 108; -- frames/updates, 60 UPS; default 108
 
 local GetTerrMatter = SceneMan.GetTerrMatter;
@@ -38,6 +39,63 @@ local function GetRandom()
 	end
 
 	return randomTable[randomTableIterator];
+end
+
+local function spawnSmonk(var)
+	local smonk = CreateMOSParticle("Tiny Smoke Ball 1", "Base.rte")
+	smonk.Pos = var.Pos;
+	smonk.Vel = Vector(math.random(-2, 2), math.random(-2, 2));
+	smonk.HitsMOs = false;
+	AddParticle(MovableMan, smonk);
+end
+
+function OnCollideWithMO(self, hitMO, hitMORootParent)
+	local var = self.var;
+	if (var.corrosion > 0) then
+		local MOCorrosion = GetNumberValue(hitMO, "GAYER_MOCorrosion");
+		local corrosionFactor = (var.corrosion - MOCorrosion) / var.corrosion;
+
+		if (MOCorrosion == 0 or GetRandom() < var.corrosion / MOCorrosion) then
+			local corrosionToAdd = math.ceil(math.max((var.corrosion - MOCorrosion)*corrosionFactor*0.1, MOCorrosion/100));
+			local finalCorrosion = MOCorrosion + corrosionToAdd;
+			SetNumberValue(hitMO, "GAYER_MOCorrosion", finalCorrosion);
+			var.corrosion = var.corrosion - corrosionToAdd;
+
+			if (GetRandom() < MOSmonkChance) then
+				spawnSmonk(var);
+			end
+
+			local MOMat = hitMO.Material;
+			local matSI = MOMat.StructuralIntegrity;
+			local pixelCount = math.ceil(hitMO.IndividualMass / MOMat.DensityKGPerPixel);
+	
+			if (finalCorrosion >= matSI * pixelCount) then
+				pixelCount = math.min(pixelCount, ToMOSprite(hitMO):GetSpriteWidth() * ToMOSprite(hitMO):GetSpriteHeight() * 0.5);
+				if (IsMOSRotating(hitMO)) then
+					hitMOSR = ToMOSRotating(hitMO);
+					if (hitMO.UniqueID ~= hitMORootParent.UniqueID) then
+						ToAttachable(hitMO):RemoveFromParent(false, false);
+					end
+					-- hitMOSR:GibThis();
+					for attachable in hitMOSR.Attachables do
+						attachable:RemoveFromParent(true, false);
+					end
+					hitMO.ToDelete = true;
+				end
+
+				local spawnPos = hitMO.Pos;
+
+				for i = 0, pixelCount do
+					local acidThiccsel = CreateMOPixel("Funny Acid", "GAYER.rte");
+					acidThiccsel.Pos = spawnPos;
+					acidThiccsel.Vel = hitMO.Vel + Vector(math.random(-2, 2), math.random(-2, 2));
+					AddParticle(MovableMan, acidThiccsel);
+					SetNumberValue(acidThiccsel, "GAYER_Corrosion", matSI / pixelCount)
+				end
+				hitMO.ToDelete = true;
+			end
+		end
+	end
 end
 
 function Create(self)
@@ -175,9 +233,7 @@ function SyncedUpdate(self)
 			table.insert(pixels, acidThiccsel);
 			
 			if (GetRandom() <= smonkChance) then
-				local smonk = CreateMOSParticle("Tiny Smoke Ball 1", "Base.rte")
-				smonk.Pos = pos;
-				AddParticle(MovableMan, smonk);
+				spawnSmonk(var);
 			end
 			
 			var.corrosion = var.corrosion - var.acidTable[i][3];
