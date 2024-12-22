@@ -1,0 +1,7 @@
+Orange Shard Cannon incineration effect LAUNCHES SKELETONS
+Fireball tech balls bounce off at wild speeds and angles and also very erratically
+Floating Mine doesn't work (line 27)
+Soviet Pistol lua error (line 5)
+Clubbomatic don't spin :<
+New Sausage is HELD WRONG
+Snowball throw offsets
