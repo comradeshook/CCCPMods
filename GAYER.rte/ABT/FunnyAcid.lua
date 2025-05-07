@@ -41,10 +41,15 @@ local function GetRandom()
 	return randomTable[randomTableIterator];
 end
 
+local function GetRandomRange(minimum, maximum)
+	local diff = maximum - minimum;
+	return (minimum + diff*GetRandom());
+end
+
 local function spawnSmonk(var)
 	local smonk = CreateMOSParticle("Tiny Smoke Ball 1", "Base.rte")
 	smonk.Pos = var.Pos;
-	smonk.Vel = Vector(math.random(-2, 2), math.random(-2, 2));
+	smonk.Vel = Vector(GetRandomRange(-2, 2), GetRandomRange(-2, 2));
 	smonk.HitsMOs = false;
 	AddParticle(MovableMan, smonk);
 end
@@ -88,7 +93,7 @@ function OnCollideWithMO(self, hitMO, hitMORootParent)
 				for i = 0, pixelCount do
 					local acidThiccsel = CreateMOPixel("Funny Acid", "GAYER.rte");
 					acidThiccsel.Pos = spawnPos;
-					acidThiccsel.Vel = hitMO.Vel + Vector(math.random(-2, 2), math.random(-2, 2));
+					acidThiccsel.Vel = hitMO.Vel + Vector(GetRandomRange(-2, 2), GetRandomRange(-2, 2));
 					AddParticle(MovableMan, acidThiccsel);
 					SetNumberValue(acidThiccsel, "GAYER_Corrosion", matSI / pixelCount)
 				end
@@ -109,7 +114,6 @@ function Create(self)
 	var.pinCounter = 0;
 	var.pinDuration = (corrodeInterval/2) + var.corrodeTimerOffset;
 	var.fluidRange = 2;
-	var.flow = false;
 	var.checkTable = {
 		{0, 1, bottomChance},
 		{var.firstSide, 0, sideChance},
@@ -124,11 +128,6 @@ function Create(self)
 	end
 end
 
-function OnCollideWithTerrain(self, nah)
-	local var = self.var;
-	var.flow = true;
-end
-
 function ThreadedUpdate(self)
 	local var = self.var;
 	if (var.pinCounter ~= nil) then
@@ -140,7 +139,7 @@ function ThreadedUpdate(self)
 		end
 	end
 	
-	if (var.flow == true and var.pinCounter == nil) then
+	if (var.pinCounter == nil) then
 		local eggs = var.Pos.X;
 		local why = var.Pos.Y;
 		local fluidDirection = 0;
