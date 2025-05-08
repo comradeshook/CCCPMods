@@ -6,11 +6,16 @@ local smonkChance = 0.1;
 local MOSmonkChance = 0.1;
 local corrodeInterval = 108; -- frames/updates, 60 UPS; default 108
 
+local Floor = math.floor;
+local Abs = math.abs;
+local Sqrt = math.sqrt;
+
 local GetTerrMatter = SceneMan.GetTerrMatter;
 local DislodgePixel = SceneMan.DislodgePixel;
 local GetMaterialFromID = SceneMan.GetMaterialFromID;
 
 local AddParticle = MovableMan.AddParticle;
+local GetMOsInRadius = MovableMan.GetMOsInRadius;
 
 local dummyTimer = Timer();
 local IsPastSimMS = dummyTimer.IsPastSimMS;
@@ -27,6 +32,10 @@ dummyParticle = nil;
 local randomTable = {};
 local randomTableIterator = 0;
 local randomTableSize = 500;
+
+local sqrt2 = math.sqrt(2);
+
+local fluidTable = {};
 
 for i = 1, randomTableSize do
 	table.insert(randomTable, math.random());
@@ -128,6 +137,28 @@ function Create(self)
 	end
 end
 
+function InitialiseFluidEntry(posX, posY)
+	if (fluidTable[posX] == nil) then
+		fluidTable[posX] = {};
+	end
+	
+	if (fluidTable[posX][posY] == nil) then
+		fluidTable[posX][posY] = 0;
+	end
+end
+
+function ChangeFluidTable(posX, posY, value)
+	InitialiseFluidEntry(posX, posY);
+
+	fluidTable[posX][posY] = fluidTable[posX][posY] + value;
+end
+
+function ReadFluidTable(posX, posY)
+	InitialiseFluidEntry(posX, posY);
+
+	return fluidTable[posX][posY];
+end
+
 function ThreadedUpdate(self)
 	local var = self.var;
 	if (var.pinCounter ~= nil) then
@@ -142,6 +173,16 @@ function ThreadedUpdate(self)
 	if (var.pinCounter == nil) then
 		local eggs = var.Pos.X;
 		local why = var.Pos.Y;
+		local fleggs = Floor(eggs);
+		local fly = Floor(why);
+
+		if (var.oldPos ~= nil) then
+			ChangeFluidTable(var.oldPos[1], var.oldPos[2], -1);
+		end
+		var.oldPos = {fleggs, fly};
+		ChangeFluidTable(fleggs, fly, 1);
+
+		-- Flow mechanics
 		local fluidDirection = 0;
 		var.blockageTable[0] = GetTerrMatter(SceneMan, eggs + var.checkTable[1][1], why + var.checkTable[1][2]);
 		
@@ -173,9 +214,48 @@ function ThreadedUpdate(self)
 			
 			var.Vel.X = var.Vel.X + fluidDirection;
 		end
-		var.flow = false;
+
+		-- Pressure mechanics
+		local pressureTable = {};
+		pressureTable.X = 0;
+		pressureTable.Y = 0;
+		local scatter = ReadFluidTable(fleggs, fly) - 1;
+		local particleCount = scatter;
+
+		-- for MO in GetMOsInRadius(MovableMan, var.Pos, 0.5) do
+		-- 	particleCount = particleCount + 1;
+		-- 	scatter = scatter + 1;
+		-- end
+
+		for x = -1, 1, 1 do
+			for y = -1, 1, 1 do
+				if (x == 0 and y == 0) == false then
+					local particles = ReadFluidTable(fleggs + x, fly + y);
+					if (particles == 0) then
+						local terrain = GetTerrMatter(SceneMan, fleggs + x, fly + y);
+						if (terrain ~= 0) then
+							goto continue;
+						end
+					end
+					if (particles ~= scatter) then
+						particleCount = particleCount + particles;
+						local factor = 1/Sqrt(Abs(x)*Abs(x) + Abs(y)*Abs(y))
+						local particleDifference = particles - scatter;
+						pressureTable.X = pressureTable.X - (particleDifference*x) * factor;
+						pressureTable.Y = pressureTable.Y - (particleDifference*y) * factor;
+					end
+					::continue::
+				end
+			end
+		end
+
+		if (particleCount > 2) then
+			var.Vel.X = var.Vel.X + pressureTable.X/4;
+			var.Vel.Y = var.Vel.Y + pressureTable.Y/4;
+		end
 	end
 	
+	-- Corrosion mechanics
 	var.corrodeCounter = var.corrodeCounter + 1;
 	if (var.corrodeCounter > (corrodeInterval/2) + var.corrodeTimerOffset) then
 		var.corrodeCounter = 0;
