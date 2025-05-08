@@ -114,7 +114,7 @@ end
 
 function Create(self)
 	local var = {};
-	var.firstSide = GetRandom(0, 1)*2 - 1;
+	var.firstSide = math.random(0, 1)*2 - 1;
 	var.corrosion = 0;
 	var.Pos = self.Pos;
 	var.Vel = self.Vel;
@@ -175,45 +175,13 @@ function ThreadedUpdate(self)
 		local why = var.Pos.Y;
 		local fleggs = Floor(eggs);
 		local fly = Floor(why);
+		var.blockageTable = {};
 
 		if (var.oldPos ~= nil) then
 			ChangeFluidTable(var.oldPos[1], var.oldPos[2], -1);
 		end
 		var.oldPos = {fleggs, fly};
 		ChangeFluidTable(fleggs, fly, 1);
-
-		-- Flow mechanics
-		local fluidDirection = 0;
-		var.blockageTable[0] = GetTerrMatter(SceneMan, eggs + var.checkTable[1][1], why + var.checkTable[1][2]);
-		
-		if (var.blockageTable[0] ~= 0) then
-			var.blockageTable[var.firstSide] = GetTerrMatter(SceneMan, eggs + var.checkTable[2][1], why);
-			var.blockageTable[-var.firstSide] = GetTerrMatter(SceneMan, eggs + var.checkTable[3][1], why);
-			for q = -var.firstSide, var.firstSide, 2*var.firstSide do
-				if (var.blockageTable[q] == 0) then
-					local skip = false;
-					for i = 1, var.fluidRange do
-						if (skip == false) then
-							local n = i * q;
-							local trueEggs = eggs + n;
-							local matt = GetTerrMatter(SceneMan, trueEggs, why + 1);
-							if (matt == 0) then
-								fluidDirection = fluidDirection + 1/n;
-								skip = true;
-							end
-						end
-					end
-				end
-			end
-			
-			fluidDirection = fluidDirection / (var.fluidRange*2 + 1);
-			
-			if (fluidDirection == 0) then
-				fluidDirection = GetRandom() - 0.5;
-			end
-			
-			var.Vel.X = var.Vel.X + fluidDirection;
-		end
 
 		-- Pressure mechanics
 		local pressureTable = {};
@@ -222,11 +190,6 @@ function ThreadedUpdate(self)
 		local scatter = ReadFluidTable(fleggs, fly) - 1;
 		local particleCount = scatter;
 
-		-- for MO in GetMOsInRadius(MovableMan, var.Pos, 0.5) do
-		-- 	particleCount = particleCount + 1;
-		-- 	scatter = scatter + 1;
-		-- end
-
 		for x = -1, 1, 1 do
 			for y = -1, 1, 1 do
 				if (x == 0 and y == 0) == false then
@@ -234,6 +197,11 @@ function ThreadedUpdate(self)
 					if (particles == 0) then
 						local terrain = GetTerrMatter(SceneMan, fleggs + x, fly + y);
 						if (terrain ~= 0) then
+							if (var.blockageTable[x] == nil) then
+								var.blockageTable[x] = {};
+							end
+
+							var.blockageTable[x][y] = terrain;
 							goto continue;
 						end
 					end
@@ -252,6 +220,38 @@ function ThreadedUpdate(self)
 		if (particleCount > 2) then
 			var.Vel.X = var.Vel.X + pressureTable.X/4;
 			var.Vel.Y = var.Vel.Y + pressureTable.Y/4;
+		end
+
+		-- Flow mechanics
+		local fluidDirection = 0;
+		
+		if (var.blockageTable[0] ~= nil and var.blockageTable[0][1] ~= nil) then
+			for q = -var.firstSide, var.firstSide, 2*var.firstSide do
+				if (var.blockageTable[q] == nil or var.blockageTable[q][0] == nil) then
+					local skip = false;
+					for i = 1, var.fluidRange do
+						if (skip == false) then
+							local n = i * q;
+							local trueEggs = eggs + n;
+							if (var.blockageTable[n] == nil or var.blockageTable[n][1] == nil) then
+								local matt = GetTerrMatter(SceneMan, trueEggs, why + 1);
+								if (matt == 0) then
+									fluidDirection = fluidDirection + 1/n;
+									skip = true;
+								end
+							end
+						end
+					end
+				end
+			end
+			
+			fluidDirection = fluidDirection / (var.fluidRange*2 + 1);
+			
+			if (fluidDirection == 0) then
+				fluidDirection = GetRandom() - 0.5;
+			end
+			
+			var.Vel.X = var.Vel.X + fluidDirection;
 		end
 	end
 	
@@ -275,9 +275,9 @@ function ThreadedUpdate(self)
 				local trueEggs = eggs + var.checkTable[i][1];
 				local trueWhy = why + var.checkTable[i][2];
 				local terrainID = nil;
-				if (var.blockageTable[0] and i == 1) then
-					terrainID = var.blockageTable[0];
-					var.blockageTable[0] = nil;
+				if (var.blockageTable[0] ~= nil and var.blockageTable[0][1] ~= nil and i == 1) then
+					terrainID = var.blockageTable[0][1];
+					var.blockageTable[0][1] = nil;
 				else
 					terrainID = GetTerrMatter(SceneMan, trueEggs, trueWhy);
 				end
