@@ -70,7 +70,7 @@ function OnCollideWithMO(self, hitMO, hitMORootParent)
 		local corrosionFactor = (var.corrosion - MOCorrosion) / var.corrosion;
 
 		if (MOCorrosion == 0 or GetRandom() < var.corrosion / MOCorrosion) then
-			local corrosionToAdd = math.ceil(math.max((var.corrosion - MOCorrosion)*corrosionFactor*0.1, MOCorrosion/100));
+			local corrosionToAdd = math.ceil(math.max((var.corrosion - MOCorrosion)*corrosionFactor*0.1, var.corrosion/100));
 			local finalCorrosion = MOCorrosion + corrosionToAdd;
 			SetNumberValue(hitMO, "GAYER_MOCorrosion", finalCorrosion);
 			var.corrosion = var.corrosion - corrosionToAdd;
@@ -129,7 +129,6 @@ function Create(self)
 		{-var.firstSide, 0, sideChance},
 		{0, -1, topChance}
 	};
-	var.blockageTable = {};
 	self.var = var;
 	
 	if (GetRandom() < 0.5) then
@@ -161,6 +160,7 @@ end
 
 function ThreadedUpdate(self)
 	local var = self.var;
+	local blockageTable = {};
 	if (var.pinCounter ~= nil) then
 		local PINNY = self.PinStrength;
 		var.pinCounter = var.pinCounter + 1;
@@ -175,7 +175,9 @@ function ThreadedUpdate(self)
 		local why = var.Pos.Y;
 		local fleggs = Floor(eggs);
 		local fly = Floor(why);
-		var.blockageTable = {};
+		local extraVel = {};
+		extraVel.X = 0;
+		extraVel.Y = 0;
 
 		if (var.oldPos ~= nil) then
 			ChangeFluidTable(var.oldPos[1], var.oldPos[2], -1);
@@ -197,11 +199,11 @@ function ThreadedUpdate(self)
 					if (particles == 0) then
 						local terrain = GetTerrMatter(SceneMan, fleggs + x, fly + y);
 						if (terrain ~= 0) then
-							if (var.blockageTable[x] == nil) then
-								var.blockageTable[x] = {};
+							if (blockageTable[x] == nil) then
+								blockageTable[x] = {};
 							end
 
-							var.blockageTable[x][y] = terrain;
+							blockageTable[x][y] = terrain;
 							goto continue;
 						end
 					end
@@ -218,22 +220,22 @@ function ThreadedUpdate(self)
 		end
 
 		if (particleCount > 2) then
-			var.Vel.X = var.Vel.X + pressureTable.X/4;
-			var.Vel.Y = var.Vel.Y + pressureTable.Y/4;
+			extraVel.X = pressureTable.X/4;
+			extraVel.Y = pressureTable.Y/4;
 		end
 
 		-- Flow mechanics
 		local fluidDirection = 0;
 		
-		if (var.blockageTable[0] ~= nil and var.blockageTable[0][1] ~= nil) then
+		if (blockageTable[0] ~= nil and blockageTable[0][1] ~= nil) then
 			for q = -var.firstSide, var.firstSide, 2*var.firstSide do
-				if (var.blockageTable[q] == nil or var.blockageTable[q][0] == nil) then
+				if (blockageTable[q] == nil or blockageTable[q][0] == nil) then
 					local skip = false;
 					for i = 1, var.fluidRange do
 						if (skip == false) then
 							local n = i * q;
 							local trueEggs = eggs + n;
-							if (var.blockageTable[n] == nil or var.blockageTable[n][1] == nil) then
+							if (blockageTable[n] == nil or blockageTable[n][1] == nil) then
 								local matt = GetTerrMatter(SceneMan, trueEggs, why + 1);
 								if (matt == 0) then
 									fluidDirection = fluidDirection + 1/n;
@@ -251,7 +253,15 @@ function ThreadedUpdate(self)
 				fluidDirection = GetRandom() - 0.5;
 			end
 			
-			var.Vel.X = var.Vel.X + fluidDirection;
+			extraVel.X = extraVel.X + fluidDirection;
+		end
+
+		if (extraVel.X ~= 0) then
+			var.Vel.X = var.Vel.X + extraVel.X;
+		end
+	
+		if (extraVel.Y ~= 0) then
+			var.Vel.Y = var.Vel.Y + extraVel.Y;
 		end
 	end
 	
@@ -275,9 +285,9 @@ function ThreadedUpdate(self)
 				local trueEggs = eggs + var.checkTable[i][1];
 				local trueWhy = why + var.checkTable[i][2];
 				local terrainID = nil;
-				if (var.blockageTable[0] ~= nil and var.blockageTable[0][1] ~= nil and i == 1) then
-					terrainID = var.blockageTable[0][1];
-					var.blockageTable[0][1] = nil;
+				if (blockageTable[0] ~= nil and blockageTable[0][1] ~= nil and i == 1) then
+					terrainID = blockageTable[0][1];
+					blockageTable[0][1] = nil;
 				else
 					terrainID = GetTerrMatter(SceneMan, trueEggs, trueWhy);
 				end
