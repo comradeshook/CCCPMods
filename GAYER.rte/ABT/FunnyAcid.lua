@@ -1,10 +1,10 @@
 local baseCorrosion = 100;
-local bottomChance = 0.7;
-local sideChance = 1;
+local bottomChance = 1;
+local sideChance = 0.6;
 local topChance = 0.2;
 local smonkChance = 0.1;
 local MOSmonkChance = 0.1;
-local corrodeInterval = 150; -- frames/updates, 60 UPS; default 108
+local corrodeInterval = 108; -- frames/updates, 60 UPS; default 108
 
 local Floor = math.floor;
 local Abs = math.abs;
@@ -338,9 +338,7 @@ function SyncedUpdate(self)
 			local acidThiccsel = CreateMOPixel("Funny Acid", "GAYER.rte");
 			local pos = Vector(eggs, why);
 			acidThiccsel.Pos = pos;
-			if (GetRandom() < 0.6) then
-				acidThiccsel.PinStrength = 10;
-			end
+			acidThiccsel.PinStrength = 10;
 			table.insert(pixels, acidThiccsel);
 			
 			if (GetRandom() <= smonkChance) then
