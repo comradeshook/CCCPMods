@@ -1,14 +1,17 @@
 local baseCorrosion = 100;
-local bottomChance = 0.6;
+local bottomChance = 0.7;
 local sideChance = 1;
 local topChance = 0.2;
 local smonkChance = 0.1;
 local MOSmonkChance = 0.1;
-local corrodeInterval = 108; -- frames/updates, 60 UPS; default 108
+local corrodeInterval = 150; -- frames/updates, 60 UPS; default 108
 
 local Floor = math.floor;
 local Abs = math.abs;
 local Sqrt = math.sqrt;
+local Cos = math.cos;
+local Sin = math.sin;
+local Atan2 = math.atan2;
 
 local GetTerrMatter = SceneMan.GetTerrMatter;
 local DislodgePixel = SceneMan.DislodgePixel;
@@ -189,13 +192,18 @@ function ThreadedUpdate(self)
 		local pressureTable = {};
 		pressureTable.X = 0;
 		pressureTable.Y = 0;
-		local scatter = ReadFluidTable(fleggs, fly) - 1;
-		local particleCount = scatter;
+		local outwardPressure = ReadFluidTable(fleggs, fly) - 1;
+		local particleCount = outwardPressure;
+		local minAround = -1;
+		local directions = 8;
 
 		for x = -1, 1, 1 do
 			for y = -1, 1, 1 do
 				if (x == 0 and y == 0) == false then
 					local particles = ReadFluidTable(fleggs + x, fly + y);
+					if (minAround == -1 or particles < minAround) then
+						minAround = particles;
+					end
 					if (particles == 0) then
 						local terrain = GetTerrMatter(SceneMan, fleggs + x, fly + y);
 						if (terrain ~= 0) then
@@ -204,13 +212,14 @@ function ThreadedUpdate(self)
 							end
 
 							blockageTable[x][y] = terrain;
+							directions = directions - 1;
 							goto continue;
 						end
 					end
-					if (particles ~= scatter) then
+					if (particles ~= outwardPressure) then
 						particleCount = particleCount + particles;
-						local factor = 1/Sqrt(Abs(x)*Abs(x) + Abs(y)*Abs(y))
-						local particleDifference = particles - scatter;
+						local factor = 1/(Abs(x) + Abs(y))
+						local particleDifference = particles - outwardPressure;
 						pressureTable.X = pressureTable.X - (particleDifference*x) * factor;
 						pressureTable.Y = pressureTable.Y - (particleDifference*y) * factor;
 					end
@@ -219,9 +228,20 @@ function ThreadedUpdate(self)
 			end
 		end
 
-		if (particleCount > 2) then
-			extraVel.X = pressureTable.X/4;
-			extraVel.Y = pressureTable.Y/4;
+		if (particleCount > 0 and minAround < outwardPressure) then
+			extraVel.X = pressureTable.X/8;
+			extraVel.Y = pressureTable.Y/8;
+		end
+
+		local scatter = (outwardPressure - minAround);
+		local pressureDir = Atan2(pressureTable.Y, pressureTable.X);
+		local arc = (3.1415/8)*directions;
+		if (scatter ~= 0) then
+			local scatterDir = GetRandomRange(-arc/2, arc/2) + pressureDir;
+			local mag = GetRandomRange(0, scatter/directions);
+
+			extraVel.X = extraVel.X + mag*Cos(scatterDir);
+			extraVel.Y = extraVel.Y + mag*Sin(scatterDir);
 		end
 
 		-- Flow mechanics
@@ -318,7 +338,9 @@ function SyncedUpdate(self)
 			local acidThiccsel = CreateMOPixel("Funny Acid", "GAYER.rte");
 			local pos = Vector(eggs, why);
 			acidThiccsel.Pos = pos;
-			acidThiccsel.PinStrength = 10;
+			if (GetRandom() < 0.6) then
+				acidThiccsel.PinStrength = 10;
+			end
 			table.insert(pixels, acidThiccsel);
 			
 			if (GetRandom() <= smonkChance) then
