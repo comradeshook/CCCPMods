@@ -1,10 +1,20 @@
+local useAltCorrosion = false;
+
 local baseCorrosion = 100;
-local bottomChance = 1;
-local sideChance = 0.6;
+local bottomChance = 0.6;
+local sideChance = 1;
 local topChance = 0.2;
+local pinChance = 0.2;
 local smonkChance = 0.1;
 local MOSmonkChance = 0.1;
 local corrodeInterval = 108; -- frames/updates, 60 UPS; default 108
+
+if (useAltCorrosion == true) then
+	bottomChance = 1;
+	sideChance = 0.6;
+	topChance = 0.2;
+	pinChance = 1;
+end
 
 local Floor = math.floor;
 local Abs = math.abs;
@@ -32,13 +42,21 @@ local NumberValueExists = dummyParticle.NumberValueExists;
 local RequestSyncedUpdate = dummyParticle.RequestSyncedUpdate;
 dummyParticle = nil;
 
+local fluidTable = {};
+local fluidCheckOrder = {
+	{0, -1},
+	{-1, 0},
+	{1, 0},
+	{0, 1},
+	{-1, -1},
+	{1, -1},
+	{-1, 1},
+	{1, 1}
+}
+
 local randomTable = {};
 local randomTableIterator = 0;
 local randomTableSize = 500;
-
-local sqrt2 = math.sqrt(2);
-
-local fluidTable = {};
 
 for i = 1, randomTableSize do
 	table.insert(randomTable, math.random());
@@ -151,12 +169,12 @@ end
 
 function ChangeFluidTable(posX, posY, value)
 	InitialiseFluidEntry(posX, posY);
-
+		
 	fluidTable[posX][posY] = fluidTable[posX][posY] + value;
 end
 
 function ReadFluidTable(posX, posY)
-	InitialiseFluidEntry(posX, posY);
+	InitialiseFluidEntry(posX, posY)
 
 	return fluidTable[posX][posY];
 end
@@ -164,6 +182,8 @@ end
 function ThreadedUpdate(self)
 	local var = self.var;
 	local blockageTable = {};
+	local outwardPressure = 0;
+
 	if (var.pinCounter ~= nil) then
 		local PINNY = self.PinStrength;
 		var.pinCounter = var.pinCounter + 1;
@@ -192,40 +212,40 @@ function ThreadedUpdate(self)
 		local pressureTable = {};
 		pressureTable.X = 0;
 		pressureTable.Y = 0;
-		local outwardPressure = ReadFluidTable(fleggs, fly) - 1;
+		outwardPressure = ReadFluidTable(fleggs, fly) - 1;
 		local particleCount = outwardPressure;
 		local minAround = -1;
 		local directions = 8;
+		local airborne = true;
 
-		for x = -1, 1, 1 do
-			for y = -1, 1, 1 do
-				if (x == 0 and y == 0) == false then
-					local particles = ReadFluidTable(fleggs + x, fly + y);
-					if (minAround == -1 or particles < minAround) then
-						minAround = particles;
+		for i = 1, #fluidCheckOrder do
+			local x = fluidCheckOrder[i][1];
+			local y = fluidCheckOrder[i][2];
+			local particles = ReadFluidTable(fleggs + x, fly + y);
+			if (minAround == -1 or particles < minAround) then
+				minAround = particles;
+			end
+			if (particles == 0 and (airborne == false or i <= 4)) then
+				local terrain = GetTerrMatter(SceneMan, fleggs + x, fly + y);
+				if (terrain ~= 0) then
+					if (blockageTable[x] == nil) then
+						blockageTable[x] = {};
 					end
-					if (particles == 0) then
-						local terrain = GetTerrMatter(SceneMan, fleggs + x, fly + y);
-						if (terrain ~= 0) then
-							if (blockageTable[x] == nil) then
-								blockageTable[x] = {};
-							end
 
-							blockageTable[x][y] = terrain;
-							directions = directions - 1;
-							goto continue;
-						end
-					end
-					if (particles ~= outwardPressure) then
-						particleCount = particleCount + particles;
-						local factor = 1/(Abs(x) + Abs(y))
-						local particleDifference = particles - outwardPressure;
-						pressureTable.X = pressureTable.X - (particleDifference*x) * factor;
-						pressureTable.Y = pressureTable.Y - (particleDifference*y) * factor;
-					end
-					::continue::
+					blockageTable[x][y] = terrain;
+					directions = directions - 1;
+					airborne = false;
+					goto continue;
 				end
 			end
+			if (particles ~= outwardPressure) then
+				particleCount = particleCount + particles;
+				local factor = 1/(Abs(x) + Abs(y))
+				local particleDifference = particles - outwardPressure;
+				pressureTable.X = pressureTable.X - (particleDifference*x) * factor;
+				pressureTable.Y = pressureTable.Y - (particleDifference*y) * factor;
+			end
+			::continue::
 		end
 
 		if (particleCount > 0 and minAround < outwardPressure) then
@@ -301,7 +321,9 @@ function ThreadedUpdate(self)
 		end
 		
 		for i = 1, #var.checkTable do
-			if (GetRandom() < var.checkTable[i][3]) then
+			local chanceRoll = GetRandom();
+			local chance = var.checkTable[i][3];
+			if (chanceRoll < chance and (i ~= 1 or chanceRoll < chance / (outwardPressure + 1))) then
 				local trueEggs = eggs + var.checkTable[i][1];
 				local trueWhy = why + var.checkTable[i][2];
 				local terrainID = nil;
@@ -338,7 +360,9 @@ function SyncedUpdate(self)
 			local acidThiccsel = CreateMOPixel("Funny Acid", "GAYER.rte");
 			local pos = Vector(eggs, why);
 			acidThiccsel.Pos = pos;
-			acidThiccsel.PinStrength = 10;
+			if (GetRandom() < pinChance) then
+				acidThiccsel.PinStrength = 10;
+			end
 			table.insert(pixels, acidThiccsel);
 			
 			if (GetRandom() <= smonkChance) then
