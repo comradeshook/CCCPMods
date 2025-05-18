@@ -72,8 +72,7 @@ local function GetRandom()
 end
 
 local function GetRandomRange(minimum, maximum)
-	local diff = maximum - minimum;
-	return (minimum + diff*GetRandom());
+	return (minimum + (maximum - minimum)*GetRandom());
 end
 
 local function spawnSmonk(var)
@@ -82,56 +81,57 @@ local function spawnSmonk(var)
 	smonk.Vel = Vector(GetRandomRange(-2, 2), GetRandomRange(-2, 2));
 	smonk.HitsMOs = false;
 	AddParticle(MovableMan, smonk);
+	smonk = nil;
 end
 
-function OnCollideWithMO(self, hitMO, hitMORootParent)
-	local var = self.var;
-	if (var.corrosion > 0) then
-		local MOCorrosion = GetNumberValue(hitMO, "GAYER_MOCorrosion");
-		local corrosionFactor = (var.corrosion - MOCorrosion) / var.corrosion;
+-- function OnCollideWithMO(self, hitMO, hitMORootParent)
+-- 	local var = self.var;
+-- 	if (var.corrosion > 0) then
+-- 		local MOCorrosion = GetNumberValue(hitMO, "GAYER_MOCorrosion");
+-- 		local corrosionFactor = (var.corrosion - MOCorrosion) / var.corrosion;
 
-		if (MOCorrosion == 0 or GetRandom() < var.corrosion / MOCorrosion) then
-			local corrosionToAdd = math.ceil(math.max((var.corrosion - MOCorrosion)*corrosionFactor*0.1, var.corrosion/100));
-			local finalCorrosion = MOCorrosion + corrosionToAdd;
-			SetNumberValue(hitMO, "GAYER_MOCorrosion", finalCorrosion);
-			var.corrosion = var.corrosion - corrosionToAdd;
+-- 		if (MOCorrosion == 0 or GetRandom() < var.corrosion / MOCorrosion) then
+-- 			local corrosionToAdd = math.ceil(math.max((var.corrosion - MOCorrosion)*corrosionFactor*0.1, var.corrosion/100));
+-- 			local finalCorrosion = MOCorrosion + corrosionToAdd;
+-- 			SetNumberValue(hitMO, "GAYER_MOCorrosion", finalCorrosion);
+-- 			var.corrosion = var.corrosion - corrosionToAdd;
 
-			if (GetRandom() < MOSmonkChance) then
-				spawnSmonk(var);
-			end
+-- 			if (GetRandom() < MOSmonkChance) then
+-- 				spawnSmonk(var);
+-- 			end
 
-			local MOMat = hitMO.Material;
-			local matSI = MOMat.StructuralIntegrity;
-			local pixelCount = math.ceil(hitMO.IndividualMass / MOMat.DensityKGPerPixel);
+-- 			local MOMat = hitMO.Material;
+-- 			local matSI = MOMat.StructuralIntegrity;
+-- 			local pixelCount = math.ceil(hitMO.IndividualMass / MOMat.DensityKGPerPixel);
 	
-			if (finalCorrosion >= matSI * pixelCount) then
-				pixelCount = math.min(pixelCount, ToMOSprite(hitMO):GetSpriteWidth() * ToMOSprite(hitMO):GetSpriteHeight() * 0.5);
-				if (IsMOSRotating(hitMO)) then
-					hitMOSR = ToMOSRotating(hitMO);
-					if (hitMO.UniqueID ~= hitMORootParent.UniqueID) then
-						ToAttachable(hitMO):RemoveFromParent(false, false);
-					end
-					-- hitMOSR:GibThis();
-					for attachable in hitMOSR.Attachables do
-						attachable:RemoveFromParent(true, false);
-					end
-					hitMO.ToDelete = true;
-				end
+-- 			if (finalCorrosion >= matSI * pixelCount) then
+-- 				pixelCount = math.min(pixelCount, ToMOSprite(hitMO):GetSpriteWidth() * ToMOSprite(hitMO):GetSpriteHeight() * 0.5);
+-- 				if (IsMOSRotating(hitMO)) then
+-- 					hitMOSR = ToMOSRotating(hitMO);
+-- 					if (hitMO.UniqueID ~= hitMORootParent.UniqueID) then
+-- 						ToAttachable(hitMO):RemoveFromParent(false, false);
+-- 					end
+-- 					-- hitMOSR:GibThis();
+-- 					for attachable in hitMOSR.Attachables do
+-- 						attachable:RemoveFromParent(true, false);
+-- 					end
+-- 					hitMO.ToDelete = true;
+-- 				end
 
-				local spawnPos = hitMO.Pos;
+-- 				local spawnPos = hitMO.Pos;
 
-				for i = 0, pixelCount do
-					local acidThiccsel = CreateMOPixel("Funny Acid", "GAYER.rte");
-					acidThiccsel.Pos = spawnPos;
-					acidThiccsel.Vel = hitMO.Vel + Vector(GetRandomRange(-2, 2), GetRandomRange(-2, 2));
-					AddParticle(MovableMan, acidThiccsel);
-					SetNumberValue(acidThiccsel, "GAYER_Corrosion", matSI / pixelCount)
-				end
-				hitMO.ToDelete = true;
-			end
-		end
-	end
-end
+-- 				for i = 0, pixelCount do
+-- 					local acidThiccsel = CreateMOPixel("Funny Acid", "GAYER.rte");
+-- 					acidThiccsel.Pos = spawnPos;
+-- 					acidThiccsel.Vel = hitMO.Vel + Vector(GetRandomRange(-2, 2), GetRandomRange(-2, 2));
+-- 					AddParticle(MovableMan, acidThiccsel);
+-- 					SetNumberValue(acidThiccsel, "GAYER_Corrosion", matSI / pixelCount)
+-- 				end
+-- 				hitMO.ToDelete = true;
+-- 			end
+-- 		end
+-- 	end
+-- end
 
 function Create(self)
 	local var = {};
@@ -157,7 +157,7 @@ function Create(self)
 	end
 end
 
-function InitialiseFluidEntry(posX, posY)
+local function InitialiseFluidEntry(posX, posY)
 	if (fluidTable[posX] == nil) then
 		fluidTable[posX] = {};
 	end
@@ -167,13 +167,13 @@ function InitialiseFluidEntry(posX, posY)
 	end
 end
 
-function ChangeFluidTable(posX, posY, value)
+local function ChangeFluidTable(posX, posY, value)
 	InitialiseFluidEntry(posX, posY);
 		
 	fluidTable[posX][posY] = fluidTable[posX][posY] + value;
 end
 
-function ReadFluidTable(posX, posY)
+local function ReadFluidTable(posX, posY)
 	InitialiseFluidEntry(posX, posY)
 
 	return fluidTable[posX][posY];
@@ -181,105 +181,122 @@ end
 
 function ThreadedUpdate(self)
 	local var = self.var;
-	local blockageTable = {};
-	local outwardPressure = 0;
+	if (var.blockageTable == nil) then
+		var.blockageTable = {};
+	else
+		for x = -1, 1 do
+			for y = -1, 1 do
+				if (var.blockageTable[x] ~= nil and var.blockageTable[x][y] ~= nil) then
+					var.blockageTable[x][y] = nil;
+				end
+			end
+		end
+	end
+		
+	var.outwardPressure = 0;
+	var.eggs = var.Pos.X;
+	var.why = var.Pos.Y;
 
+	-- tracy.ZoneBeginN("acid pin check")
 	if (var.pinCounter ~= nil) then
-		local PINNY = self.PinStrength;
+		var.PINNY = self.PinStrength;
 		var.pinCounter = var.pinCounter + 1;
-		if ((var.pinCounter > var.pinDuration and PINNY > 0) or PINNY == 0) then
+		if ((var.pinCounter > var.pinDuration and var.PINNY > 0) or var.PINNY == 0) then
 			self.PinStrength = 0;
 			var.pinCounter = nil;
 		end
 	end
+	-- tracy.ZoneEnd();
 	
 	if (var.pinCounter == nil) then
-		local eggs = var.Pos.X;
-		local why = var.Pos.Y;
-		local fleggs = Floor(eggs);
-		local fly = Floor(why);
-		local extraVel = {};
-		extraVel.X = 0;
-		extraVel.Y = 0;
+		-- tracy.ZoneBeginN("acid motion init")
+		var.fleggs = Floor(var.eggs);
+		var.fly = Floor(var.why);
+		var.extraVelX = 0;
+		var.extraVelY = 0;
+		-- tracy.ZoneEnd();
 
-		if (var.oldPos ~= nil) then
-			ChangeFluidTable(var.oldPos[1], var.oldPos[2], -1);
+		-- tracy.ZoneBeginN("acid update table")
+		if (var.oldPosX ~= nil and var.oldPosY ~= nil) then
+			ChangeFluidTable(var.oldPosX, var.oldPosY, -1);
 		end
-		var.oldPos = {fleggs, fly};
-		ChangeFluidTable(fleggs, fly, 1);
+		var.oldPosX = var.fleggs;
+		var.oldPosY = var.fly;
+		ChangeFluidTable(var.fleggs, var.fly, 1);
+		-- tracy.ZoneEnd();
 
 		-- Pressure mechanics
-		local pressureTable = {};
-		pressureTable.X = 0;
-		pressureTable.Y = 0;
-		outwardPressure = ReadFluidTable(fleggs, fly) - 1;
-		local particleCount = outwardPressure;
-		local minAround = -1;
-		local directions = 8;
-		local airborne = true;
+		var.pressureX = 0;
+		var.pressureY = 0;
+		var.outwardPressure = ReadFluidTable(var.fleggs, var.fly) - 1;
+		var.particleCount = var.outwardPressure;
+		var.minAround = -1;
+		var.directions = 8;
+		var.airborne = true;
 
 		for i = 1, #fluidCheckOrder do
-			local x = fluidCheckOrder[i][1];
-			local y = fluidCheckOrder[i][2];
-			local particles = ReadFluidTable(fleggs + x, fly + y);
-			if (minAround == -1 or particles < minAround) then
-				minAround = particles;
+			var.x = fluidCheckOrder[i][1];
+			var.y = fluidCheckOrder[i][2];
+			var.particles = ReadFluidTable(var.fleggs + var.x, var.fly + var.y);
+			if (var.minAround == -1 or var.particles < var.minAround) then
+				var.minAround = var.particles;
 			end
-			if (particles == 0 and (airborne == false or i <= 4)) then
-				local terrain = GetTerrMatter(SceneMan, fleggs + x, fly + y);
-				if (terrain ~= 0) then
-					if (blockageTable[x] == nil) then
-						blockageTable[x] = {};
+			if (var.particles == 0 and (var.airborne == false or i <= 4)) then
+				var.terrain = GetTerrMatter(SceneMan, var.fleggs + var.x, var.fly + var.y);
+				if (var.terrain ~= 0) then
+					if (var.blockageTable[var.x] == nil) then
+						var.blockageTable[var.x] = {};
 					end
 
-					blockageTable[x][y] = terrain;
-					directions = directions - 1;
-					airborne = false;
+					var.blockageTable[var.x][var.y] = var.terrain;
+					var.directions = var.directions - 1;
+					var.airborne = false;
 					goto continue;
 				end
 			end
-			if (particles ~= outwardPressure) then
-				particleCount = particleCount + particles;
-				local factor = 1/(Abs(x) + Abs(y))
-				local particleDifference = particles - outwardPressure;
-				pressureTable.X = pressureTable.X - (particleDifference*x) * factor;
-				pressureTable.Y = pressureTable.Y - (particleDifference*y) * factor;
+			if (var.particles ~= var.outwardPressure) then
+				var.particleCount = var.particleCount + var.particles;
+				var.factor = 1/(Abs(var.x) + Abs(var.y))
+				var.particleDifference = var.particles - var.outwardPressure;
+				var.pressureX = var.pressureX - (var.particleDifference*var.x) * var.factor;
+				var.pressureY = var.pressureY - (var.particleDifference*var.y) * var.factor;
 			end
 			::continue::
 		end
 
-		if (particleCount > 0 and minAround < outwardPressure) then
-			extraVel.X = pressureTable.X/8;
-			extraVel.Y = pressureTable.Y/8;
+		if (var.particleCount > 0 and var.minAround < var.outwardPressure) then
+			var.extraVelX = var.pressureX/8;
+			var.extraVelY = var.pressureY/8;
 		end
 
-		local scatter = (outwardPressure - minAround);
-		local pressureDir = Atan2(pressureTable.Y, pressureTable.X);
-		local arc = (3.1415/8)*directions;
-		if (scatter ~= 0) then
-			local scatterDir = GetRandomRange(-arc/2, arc/2) + pressureDir;
-			local mag = GetRandomRange(0, scatter/directions);
+		var.scatter = (var.outwardPressure - var.minAround);
+		var.pressureDir = Atan2(var.pressureY, var.pressureX);
+		var.arc = (3.1415/8)*var.directions;
+		if (var.scatter > 0) then
+			var.scatterDir = GetRandomRange(-var.arc/2, var.arc/2) + var.pressureDir;
+			var.mag = GetRandomRange(0, var.scatter/var.directions);
 
-			extraVel.X = extraVel.X + mag*Cos(scatterDir);
-			extraVel.Y = extraVel.Y + mag*Sin(scatterDir);
+			var.extraVelX = var.extraVelX + var.mag*Cos(var.scatterDir);
+			var.extraVelY = var.extraVelY + var.mag*Sin(var.scatterDir);
 		end
 
 		-- Flow mechanics
-		local fluidDirection = 0;
+		var.fluidDirection = 0;
 		
-		if (blockageTable[0] ~= nil and blockageTable[0][1] ~= nil) then
+		-- tracy.ZoneBeginN("acid flow mechanics")
+		if (var.blockageTable[0] ~= nil and var.blockageTable[0][1] ~= nil) then
 			for q = -var.firstSide, var.firstSide, 2*var.firstSide do
-				if (blockageTable[q] == nil or blockageTable[q][0] == nil) then
-					local skip = false;
+				if (var.blockageTable[q] == nil or var.blockageTable[q][0] == nil) then
+					var.skip = false;
 					for i = 1, var.fluidRange do
-						if (skip == false) then
-							local n = i * q;
-							local trueEggs = eggs + n;
-							if (blockageTable[n] == nil or blockageTable[n][1] == nil) then
-								local matt = GetTerrMatter(SceneMan, trueEggs, why + 1);
-								if (matt == 0) then
-									fluidDirection = fluidDirection + 1/n;
-									skip = true;
+						if (var.skip == false) then
+							var.n = i * q;
+							var.trueEggs = var.eggs + var.n;
+							if (var.blockageTable[var.n] == nil or var.blockageTable[var.n][1] == nil) then
+								var.matt = GetTerrMatter(SceneMan, var.trueEggs, var.why + 1);
+								if (var.matt == 0) then
+									var.fluidDirection = var.fluidDirection + 1/var.n;
+									var.skip = true;
 								end
 							end
 						end
@@ -287,33 +304,37 @@ function ThreadedUpdate(self)
 				end
 			end
 			
-			fluidDirection = fluidDirection / (var.fluidRange*2 + 1);
+			var.fluidDirection = var.fluidDirection / (var.fluidRange*2 + 1);
 			
-			if (fluidDirection == 0) then
-				fluidDirection = GetRandom() - 0.5;
+			if (var.fluidDirection == 0) then
+				var.fluidDirection = GetRandom() - 0.5;
 			end
 			
-			extraVel.X = extraVel.X + fluidDirection;
+			var.extraVelX = var.extraVelX + var.fluidDirection;
 		end
+		-- tracy.ZoneEnd();
 
-		if (extraVel.X ~= 0) then
-			var.Vel.X = var.Vel.X + extraVel.X;
+		-- tracy.ZoneBeginN("acid velocity update")
+		if (var.extraVelX ~= 0) then
+			var.Vel.X = var.Vel.X + var.extraVelX;
 		end
 	
-		if (extraVel.Y ~= 0) then
-			var.Vel.Y = var.Vel.Y + extraVel.Y;
+		if (var.extraVelY ~= 0) then
+			var.Vel.Y = var.Vel.Y + var.extraVelY;
 		end
+		-- tracy.ZoneEnd();
 	end
 	
 	-- Corrosion mechanics
+	-- tracy.ZoneBeginN("acid corrosion")
 	var.corrodeCounter = var.corrodeCounter + 1;
 	if (var.corrodeCounter > (corrodeInterval/2) + var.corrodeTimerOffset) then
 		var.corrodeCounter = 0;
 		var.corrodeTimerOffset = (corrodeInterval/2);
-		local eggs = var.Pos.X;
-		local why = var.Pos.Y;
 		
-		var.acidTable = {};
+		if (var.acidTable == nil) then
+			var.acidTable = {};
+		end
 		if (NumberValueExists(self, "GAYER_Corrosion") == false) then
 			var.corrosion = baseCorrosion;
 		else
@@ -321,23 +342,23 @@ function ThreadedUpdate(self)
 		end
 		
 		for i = 1, #var.checkTable do
-			local chanceRoll = GetRandom();
-			local chance = var.checkTable[i][3];
-			if (chanceRoll < chance and (i ~= 1 or chanceRoll < chance / (outwardPressure + 1))) then
-				local trueEggs = eggs + var.checkTable[i][1];
-				local trueWhy = why + var.checkTable[i][2];
-				local terrainID = nil;
-				if (blockageTable[0] ~= nil and blockageTable[0][1] ~= nil and i == 1) then
-					terrainID = blockageTable[0][1];
-					blockageTable[0][1] = nil;
+			var.chanceRoll = GetRandom();
+			var.chance = var.checkTable[i][3];
+			if (var.chanceRoll < var.chance and (i ~= 1 or var.chanceRoll < var.chance / (var.outwardPressure + 1))) then
+				var.trueEggs = var.eggs + var.checkTable[i][1];
+				var.trueWhy = var.why + var.checkTable[i][2];
+				var.terrainID = nil;
+				if (var.blockageTable[0] ~= nil and var.blockageTable[0][1] ~= nil and i == 1) then
+					var.terrainID = var.blockageTable[0][1];
+					var.blockageTable[0][1] = nil;
 				else
-					terrainID = GetTerrMatter(SceneMan, trueEggs, trueWhy);
+					var.terrainID = GetTerrMatter(SceneMan, var.trueEggs, var.trueWhy);
 				end
-				if (terrainID ~= 0) then
-					local matt = GetMaterialFromID(SceneMan, terrainID);
-					local SI = matt.StructuralIntegrity;
-					if (SI <= var.corrosion or GetRandom() <= (var.corrosion/SI)) then
-						table.insert(var.acidTable, {trueEggs, trueWhy, SI});
+				if (var.terrainID ~= 0) then
+					var.matt = GetMaterialFromID(SceneMan, var.terrainID);
+					var.SI = var.matt.StructuralIntegrity;
+					if (var.SI <= var.corrosion or GetRandom() <= (var.corrosion/var.SI)) then
+						table.insert(var.acidTable, {var.trueEggs, var.trueWhy, var.SI});
 					end
 				end
 			end
@@ -348,22 +369,27 @@ function ThreadedUpdate(self)
 			self.ToDelete = true;
 		end
 	end
+	-- tracy.ZoneEnd();
 end
 
 function SyncedUpdate(self)
+	-- tracy.ZoneBeginN("acid synced update")
 	local var = self.var;
+	if (var.pixels == nil) then
+		var.pixels = {};
+	end
+
 	for i = 1, #var.acidTable do
-		local eggs = var.acidTable[i][1];
-		local why = var.acidTable[i][2];
-		local pixels = {};
-		if (DislodgePixel(SceneMan, eggs, why, true)) then
-			local acidThiccsel = CreateMOPixel("Funny Acid", "GAYER.rte");
-			local pos = Vector(eggs, why);
-			acidThiccsel.Pos = pos;
+		var.eggs = var.acidTable[i][1];
+		var.why = var.acidTable[i][2];
+		if (DislodgePixel(SceneMan, var.eggs, var.why, true)) then
+			var.acidThiccsel = CreateMOPixel("Funny Acid", "GAYER.rte");
+			var.pixelPos = Vector(var.eggs, var.why);
+			var.acidThiccsel.Pos = var.pixelPos;
 			if (GetRandom() < pinChance) then
-				acidThiccsel.PinStrength = 10;
+				var.acidThiccsel.PinStrength = 10;
 			end
-			table.insert(pixels, acidThiccsel);
+			table.insert(var.pixels, var.acidThiccsel);
 			
 			if (GetRandom() <= smonkChance) then
 				spawnSmonk(var);
@@ -372,13 +398,16 @@ function SyncedUpdate(self)
 			var.corrosion = var.corrosion - var.acidTable[i][3];
 		end
 		
-		if (#pixels > 0) then
-			var.corrosion = var.corrosion / #pixels;
+		if (#var.pixels > 0) then
+			var.corrosion = var.corrosion / #var.pixels;
 			
-			for i = 1, #pixels do
-				AddParticle(MovableMan, pixels[i]);
-				SetNumberValue(pixels[i], "GAYER_Corrosion", var.corrosion);
+			local iters = #var.pixels;
+			for i = 1, iters do
+				local piccsel = table.remove(var.pixels);
+				AddParticle(MovableMan, piccsel);
+				SetNumberValue(piccsel, "GAYER_Corrosion", var.corrosion);
 			end
 		end
 	end
+	-- tracy.ZoneEnd();
 end
