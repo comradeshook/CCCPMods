@@ -311,19 +311,24 @@ function ThreadedUpdate(self)
 			for q = -var.firstSide, var.firstSide, 2*var.firstSide do
 				if (var.blockageTable[q] == nil or var.blockageTable[q][0] == nil) then
 					var.skip = false;
-					for i = 1, var.fluidRange do
+					var.storedDir = 0;
+					for i = var.fluidRange, 1, -1 do
 						if (var.skip == false) then
 							var.n = i * q;
 							var.trueEggs = var.eggs + var.n;
 							if (var.blockageTable[var.n] == nil or var.blockageTable[var.n][1] == nil) then
 								var.matt = GetTerrMatter(SceneMan, var.trueEggs, var.why + 1);
-								if (var.matt == 0) then
-									var.fluidDirection = var.fluidDirection + 1/var.n;
+								if (var.matt ~= 0) then
 									var.skip = true;
+								else
+									var.storedDir = 1/var.n;
 								end
+							else
+								var.skip = true;
 							end
 						end
 					end
+					var.fluidDirection = var.fluidDirection + var.storedDir;
 				end
 			end
 			
