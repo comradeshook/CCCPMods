@@ -185,9 +185,11 @@ function ThreadedUpdate(self)
 		var.blockageTable = {};
 	else
 		for x = -1, 1 do
-			for y = -1, 1 do
-				if (var.blockageTable[x] ~= nil and var.blockageTable[x][y] ~= nil) then
-					var.blockageTable[x][y] = nil;
+			if (var.blockageTable[x] ~= nil) then
+				for y = -1, 1 do
+					if (var.blockageTable[x][y] ~= nil) then
+						var.blockageTable[x][y] = nil;
+					end
 				end
 			end
 		end
@@ -241,8 +243,30 @@ function ThreadedUpdate(self)
 			if (var.minAround == -1 or var.particles < var.minAround) then
 				var.minAround = var.particles;
 			end
-			if (var.particles == 0 and (var.airborne == false or i <= 4)) then
-				var.terrain = GetTerrMatter(SceneMan, var.fleggs + var.x, var.fly + var.y);
+			if (var.particles == 0) then
+				var.toCheck = false;
+				if (i <= 4) then
+					var.toCheck = true;
+				else
+					for toCheckX = -1, 1 do
+						for toCheckY = -1, 1 do
+							if ((var.x == toCheckX or var.y == toCheckY) == false and (toCheckX + toCheckY) % 2 ~= 0) then
+								if (var.blockageTable[toCheckX + var.x] ~= nil and var.blockageTable[toCheckX + var.x][toCheckY + var.y] ~= nil) then
+									var.toCheck = true;
+									goto outOfLoop;
+								end
+							end
+						end
+					end
+				end
+				::outOfLoop::
+
+				if (var.toCheck == true) then
+					var.terrain = GetTerrMatter(SceneMan, var.fleggs + var.x, var.fly + var.y);
+				else
+					var.terrain = 0;
+				end
+
 				if (var.terrain ~= 0) then
 					if (var.blockageTable[var.x] == nil) then
 						var.blockageTable[var.x] = {};
@@ -250,7 +274,6 @@ function ThreadedUpdate(self)
 
 					var.blockageTable[var.x][var.y] = var.terrain;
 					var.directions = var.directions - 1;
-					var.airborne = false;
 					goto continue;
 				end
 			end
