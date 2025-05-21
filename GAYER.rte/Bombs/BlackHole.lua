@@ -24,6 +24,7 @@ local test6 = tableA / 2;
 local DislodgeRing = SceneMan.DislodgePixelRing;
 local DislodgeCircle = SceneMan.DislodgePixelCircle;
 local TableInsert = table.insert;
+local TableRemove = table.remove;
 
 -- lol, lmao
 local randomTable = {};
@@ -97,14 +98,14 @@ end
 function SyncedUpdate(self)
 	local var = self.var;
 	--tracy.ZoneBeginN("black hole application");
-	for i = 1, #var.inhaleTable do
-		var.inhaleTable[i][1].X = var.inhaleTable[i][1].X + var.inhaleTable[i][2].X;
-		var.inhaleTable[i][1].Y = var.inhaleTable[i][1].Y + var.inhaleTable[i][2].Y;
+	for i = 1, #var.inhaleTable, 2 do
+		var.inhaleTable[i].X = var.inhaleTable[i].X + var.inhaleTable[i+1].X;
+		var.inhaleTable[i].Y = var.inhaleTable[i].Y + var.inhaleTable[i+1].Y;
 	end
 	
-	for i = 1, #var.otherTable do
-		var.otherTable[i][1].X = var.otherTable[i][1].X + var.otherTable[i][2].X;
-		var.otherTable[i][1].Y = var.otherTable[i][1].Y + var.otherTable[i][2].Y;
+	for i = 1, #var.otherTable, 2 do
+		var.otherTable[i].X = var.otherTable[i].X + var.otherTable[i+1].X;
+		var.otherTable[i].Y = var.otherTable[i].Y + var.otherTable[i+1].Y;
 	end
 	
 	for i = 1, #var.gibTable do
@@ -114,17 +115,28 @@ function SyncedUpdate(self)
 	for i = 1, #var.deleteTable do
 		var.deleteTable[i].ToDelete = true;
 	end
-	
-	var.inhaleTable = {};
-	var.otherTable = {};
-	var.gibTable = {};
-	var.deleteTable = {};
 	--tracy.ZoneEnd();
 end
 
 function ThreadedUpdate(self)
 	local var = self.var;
 	self.Vel = self.Vel * 0.9
+	
+	while (#var.inhaleTable > 0) do
+		TableRemove(var.inhaleTable);
+	end
+	
+	while (#var.otherTable > 0) do
+		TableRemove(var.otherTable);
+	end
+	
+	while (#var.gibTable > 0) do
+		TableRemove(var.gibTable);
+	end
+	
+	while (#var.deleteTable > 0) do
+		TableRemove(var.deleteTable);
+	end
 	
 	-- optimisation bullshit lmao
 	local selfPos = self.Pos;
@@ -285,9 +297,11 @@ function ThreadedUpdate(self)
 					end
 				end
 				
-				TableInsert(var.inhaleTable, {moVEL, accVec});
+				TableInsert(var.inhaleTable, moVEL);
+				TableInsert(var.inhaleTable, accVec);
 			else
-				TableInsert(var.otherTable, {moPOS, newPos});
+				TableInsert(var.otherTable, moPOS);
+				TableInsert(var.otherTable, newPos);
 			end
 		end
 	end
